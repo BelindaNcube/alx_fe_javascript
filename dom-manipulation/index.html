@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quote Generator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and general body layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f7f9fb;
+        }
+
+        /* Style for the quote text */
+        .quote-text {
+            border-left: 5px solid #4f46e5;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+    </style>
+    <script>
+        // Initial array of quote objects
+        let quotes = [
+            { text: "The only way to do great work is to love what you do.", category: "Inspiration" },
+            { text: "Strive not to be a success, but rather to be of value.", category: "Motivation" },
+            { text: "The mind is everything. What you think you become.", category: "Wisdom" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", category: "Dreams" },
+            { text: "The best way to predict the future is to create it.", category: "Action" }
+        ];
+
+        // Function to display a random quote in the DOM
+        function showRandomQuote() {
+            const display = document.getElementById('quoteDisplay');
+
+            // Check if quotes array is empty
+            if (quotes.length === 0) {
+                display.innerHTML = `
+                    <p class="text-xl text-red-500">No quotes available. Please add some!</p>
+                `;
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            const quote = quotes[randomIndex];
+
+            // Advanced DOM Manipulation: Clear and create structured elements
+            display.innerHTML = ''; // Clear previous content
+
+            // Create the quote text element
+            const quoteText = document.createElement('p');
+            quoteText.className = 'text-3xl sm:text-4xl font-serif italic mb-4 text-gray-800 leading-snug';
+            quoteText.textContent = `“${quote.text}”`;
+
+            // Create the category/author element
+            const quoteCategory = document.createElement('p');
+            quoteCategory.className = 'text-lg font-medium text-indigo-600 mt-4 border-l-4 border-indigo-400 pl-4';
+            quoteCategory.textContent = `— Category: ${quote.category}`;
+
+            // Append the new elements to the display container
+            display.appendChild(quoteText);
+            display.appendChild(quoteCategory);
+        }
+
+        // Function to handle adding a new quote
+        function addQuote() {
+            const newQuoteText = document.getElementById('newQuoteText');
+            const newQuoteCategory = document.getElementById('newQuoteCategory');
+            const feedback = document.getElementById('feedbackMessage');
+
+            const text = newQuoteText.value.trim();
+            const category = newQuoteCategory.value.trim();
+
+            if (text && category) {
+                // Add new quote to the array
+                quotes.push({ text, category });
+
+                // Clear inputs
+                newQuoteText.value = '';
+                newQuoteCategory.value = '';
+
+                // Show success feedback
+                feedback.textContent = 'Quote added successfully!';
+                feedback.classList.remove('opacity-0', 'text-red-500');
+                feedback.classList.add('text-green-500');
+
+                // Show the newly added quote
+                showRandomQuote();
+
+                // Hide feedback after a delay
+                setTimeout(() => feedback.classList.add('opacity-0'), 2000);
+
+            } else {
+                // Show error feedback
+                feedback.textContent = 'Please fill both quote text and category.';
+                feedback.classList.remove('opacity-0', 'text-green-500');
+                feedback.classList.add('text-red-500');
+
+                // Hide feedback after a delay
+                setTimeout(() => feedback.classList.add('opacity-0'), 3000);
+            }
+        }
+
+        // Initialize the application and attach event listeners when the DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initial quote display
+            showRandomQuote();
+
+            // 2. Attach event listener to the "Show New Quote" button
+            document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
+            // 3. Attach event listener to the "Add Quote" button
+            document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
+        });
+
+    </script>
+</head>
+
+<body class="p-4 sm:p-8">
+    <div class="max-w-4xl w-full">
+        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10">Dynamic Quote Generator</h1>
+
+        <!-- Quote Display Section -->
+        <div id="quoteDisplay"
+            class="bg-white p-6 sm:p-10 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl mb-8">
+            <!-- Dynamic content will be inserted here -->
+        </div>
+
+        <!-- Quote Action Button -->
+        <div class="flex justify-center mb-12">
+            <button id="newQuote"
+                class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg hover:bg-indigo-700 transition duration-150 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Show New Quote
+            </button>
+        </div>
+
+        <!-- Dynamic Quote Addition Form -->
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add a New Quote</h2>
+            <div id="addQuoteForm" class="space-y-4">
+                <input id="newQuoteText" type="text" placeholder="Enter a new quote"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" />
+
+                <input id="newQuoteCategory" type="text" placeholder="Enter quote category"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" />
+
+                <button id="addQuoteBtn"
+                    class="w-full px-4 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-150 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50">
+                    Add Quote
+                </button>
+
+                <!-- Feedback Message -->
+                <p id="feedbackMessage" class="text-center transition duration-500 opacity-0 text-sm font-medium"></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
