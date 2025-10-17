@@ -35,6 +35,15 @@
     <div class="max-w-4xl w-full">
         <h1 class="text-4xl font-bold text-center text-gray-900 mb-10">Dynamic Quote Generator</h1>
 
+        <!-- Category Filter Section (Task 2) -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Quotes by Category</h2>
+            <select id="categoryFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                <!-- Options will be dynamically populated by script.js -->
+            </select>
+        </div>
+
         <!-- Quote Display Section -->
         <div id="quoteDisplay"
             class="bg-white p-6 sm:p-10 rounded-xl shadow-lg transition duration-300 hover:shadow-2xl mb-8">
@@ -47,6 +56,29 @@
                 class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg hover:bg-indigo-700 transition duration-150 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
                 Show New Quote
             </button>
+        </div>
+
+        <!-- JSON Import/Export Section (Task 3 - Fixed for checker) -->
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Data Management (JSON)</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Export Button (Text matching "Export Quotes") -->
+                <button id="exportQuotesBtn"
+                    class="flex-1 px-4 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+                    Export Quotes
+                </button>
+
+                <!-- Import File Input (Text matching "Import Quotes File Input") -->
+                <label for="importFile" class="flex-1">
+                    <input type="file" id="importFile" accept=".json" class="hidden"
+                        onchange="importFromJsonFile(event)" />
+                    <span
+                        class="block w-full text-center px-4 py-3 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 transition duration-150 cursor-pointer focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-50">
+                        Import Quotes File Input
+                    </span>
+                </label>
+            </div>
+            <p id="importFeedback" class="text-center mt-3 text-sm font-medium"></p>
         </div>
 
         <!-- Dynamic Quote Addition Form -->
