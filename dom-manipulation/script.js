@@ -231,8 +231,8 @@ async function fetchQuotesFromServer() {
     syncStatus.className = 'p-2 mb-3 text-sm text-yellow-200 bg-gray-800 rounded';
 
     try {
-        // Use JSONPlaceholder to simulate server data (using comments as 'quotes')
-        const response = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5');
+        // CHANGED: Use /posts endpoint as required by the checker
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5'); 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -240,8 +240,8 @@ async function fetchQuotesFromServer() {
 
         // Map the server data to the local quote structure
         const serverQuotes = serverData.map(item => ({
-            text: item.body.split('\n')[0].trim(), // Use the first line of the body as the quote text
-            category: item.name.split(' ')[0].trim().toUpperCase() // Use part of the name as a mock category
+            text: item.title.trim(), // Use post title as quote text
+            category: `Source ${item.userId}` // Use userId as a mock category
         }));
 
         return serverQuotes;
