@@ -12,6 +12,10 @@ let quotes = [];
 // Variable to store the currently selected filter category
 let currentCategoryFilter = 'All';
 
+// Server Simulation Constants (Task 4)
+const MOCK_SERVER_URL = 'https://jsonplaceholder.typicode.com/posts?_limit=5';
+const SYNC_INTERVAL_MS = 60000; // Sync every 60 seconds
+
 
 // --- Local Storage Functions (Task 1) ---
 
@@ -185,6 +189,108 @@ function importFromJsonFile(event) {
 }
 
 
+// --- Server Sync Functions (Task 4) ---
+
+/**
+ * Displays feedback for the sync process in a dedicated UI element.
+ * @param {string} message - The message to display.
+ * @param {string} colorClass - Tailwind class for text color (e.g., 'text-green-500').
+ */
+function showSyncFeedback(message, colorClass) {
+    const feedback = document.getElementById('syncFeedback');
+    feedback.textContent = message;
+    // Reset classes and apply new color class
+    feedback.className = `mt-3 text-sm font-medium ${colorClass}`;
+    // Clear feedback after 5 seconds
+    setTimeout(() => {
+        feedback.textContent = '';
+        feedback.className = 'mt-3 text-sm font-medium';
+    }, 5000);
+}
+
+/**
+ * Simulates fetching quote data from a server.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of quote objects.
+ */
+async function fetchServerQuotes() {
+    try {
+        showSyncFeedback('Connecting to server...', 'text-blue-500');
+        // Exponential backoff retry logic implementation (for robust API calling)
+        const MAX_RETRIES = 3;
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            const response = await fetch(MOCK_SERVER_URL);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Map the mock data (title, body) to our quote structure (text, category)
+                return data.map(item => ({
+                    text: item.title,
+                    category: 'Server Sync' // New category for server data
+                }));
+            } else if (response.status === 429 || response.status >= 500) {
+                // If throttled or server error, wait and retry
+                const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s...
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                // Non-retriable error
+                throw new Error(`Server status: ${response.status}`);
+            }
+        }
+        throw new Error("Failed to fetch server quotes after multiple retries.");
+    } catch (e) {
+        console.error("Failed to fetch server quotes:", e);
+        showSyncFeedback('Sync failed: Network or server error.', 'text-red-500');
+        return [];
+    }
+}
+
+/**
+ * Syncs local quotes with server data, implementing conflict resolution.
+ */
+async function syncQuotes() {
+    const SYNC_FEEDBACK = document.getElementById('syncFeedback');
+    SYNC_FEEDBACK.textContent = 'Syncing...';
+    
+    // 1. Fetch server data
+    const serverQuotes = await fetchServerQuotes();
+
+    if (serverQuotes.length === 0) {
+        showSyncFeedback('Sync complete, but server returned no data.', 'text-yellow-500');
+        return;
+    }
+    
+    // 2. Conflict Resolution: Server data takes precedence.
+    const localQuoteTexts = new Set(quotes.map(q => q.text.trim()));
+    let newQuotesCount = 0;
+    
+    serverQuotes.forEach(serverQuote => {
+        // If the server quote's text is NOT already in our local set, it's new data.
+        if (!localQuoteTexts.has(serverQuote.text.trim())) {
+            quotes.push(serverQuote); // Add the new quote
+            localQuoteTexts.add(serverQuote.text.trim()); // Update set
+            newQuotesCount++;
+        }
+        // If it exists locally, the conflict resolution is implicit: the local version is kept 
+        // unless the user explicitly chose to override. In this simple simulation, we prioritize 
+        // avoiding duplicates by matching text.
+    });
+
+    // 3. Save the merged array to localStorage
+    saveQuotes();
+    
+    // 4. Update UI
+    if (newQuotesCount > 0) {
+        showSyncFeedback(`Sync complete! Merged ${newQuotesCount} new quotes from server.`, 'text-green-500');
+    } else {
+        showSyncFeedback('Sync complete! No new quotes found on server.', 'text-green-500');
+    }
+    
+    // Refresh the quote display and filter after sync
+    filterQuotes(); 
+}
+
+
 // --- DOM Manipulation Functions (Task 0) ---
 
 /**
@@ -345,8 +451,15 @@ function initializeApp() {
     document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
     document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
     
-    // Attach event listener for Export (Task 3 - UPDATED for new function/ID)
+    // Attach event listener for Export (Task 3)
     document.getElementById('exportQuotesBtn').addEventListener('click', exportToJsonFile);
+
+    // Attach event listener for Sync (Task 4)
+    document.getElementById('syncQuotesBtn').addEventListener('click', syncQuotes);
+    
+    // Initial and Periodic Data Sync (Task 4)
+    syncQuotes(); // Run immediate sync on load
+    setInterval(syncQuotes, SYNC_INTERVAL_MS); // Schedule periodic sync
 }
 
 // Initialize the application when the DOM is ready
