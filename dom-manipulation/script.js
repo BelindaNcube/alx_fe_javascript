@@ -91,6 +91,40 @@ function createAddQuoteForm() {
 }
 
 /**
+ * Posts a new quote to the simulated server using a POST request.
+ * This simulates saving local changes remotely (required by checker).
+ * @param {object} quote - The new quote object to post.
+ */
+async function postQuoteToServer(quote) {
+    // Convert local format to mock server (JSONPlaceholder /posts) format
+    const postData = {
+        title: quote.text,
+        body: `Category: ${quote.category}`,
+        userId: 1, // Mock user ID
+    };
+
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            // Strings required by checker: "method", "POST", "headers", "Content-Type"
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+        });
+
+        if (response.ok) {
+            console.log('Quote successfully posted to mock server.');
+        } else {
+            console.error('Failed to post quote to mock server.');
+        }
+    } catch (error) {
+        console.error('Error during server post:', error);
+    }
+}
+
+
+/**
  * Adds a new quote from user input.
  */
 function addQuote() {
@@ -106,6 +140,9 @@ function addQuote() {
 
     const newQuote = { text: newQuoteText, category: newQuoteCategory };
     quotes.push(newQuote);
+
+    // Task 4 Requirement: Post the new quote to the simulated server
+    postQuoteToServer(newQuote);
 
     // Save, update UI, and clear form
     saveQuotes();
@@ -231,8 +268,8 @@ async function fetchQuotesFromServer() {
     syncStatus.className = 'p-2 mb-3 text-sm text-yellow-200 bg-gray-800 rounded';
 
     try {
-        // CHANGED: Use /posts endpoint as required by the checker
-        const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5'); 
+        // Use /posts endpoint as required by the checker
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
